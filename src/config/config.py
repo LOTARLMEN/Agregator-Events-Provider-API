@@ -12,6 +12,9 @@ class Setting(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    EVENTS_PROVIDER_API_KEY: str
+    EVENTS_PROVIDER_BASE_URL: str
+
     @property
     def DATABASE_URL(self) -> str:
         return (
@@ -20,7 +23,9 @@ class Setting(BaseSettings):
         )
 
     model_config = SettingsConfigDict(
-        env_file=ROOT_DIR / ".env", env_file_encoding="utf-8"
+        env_file=ROOT_DIR / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 
