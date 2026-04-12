@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, EmailStr
 class TicketResponseSchem(BaseModel):
 
     id: UUID = Field(alias="ticket_id")
+
     model_config = ConfigDict(from_attributes=True)
 
 
