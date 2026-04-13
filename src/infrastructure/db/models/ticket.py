@@ -14,7 +14,7 @@ class Ticket(Base):
         unique=True,
         index=True,
     )
-    event_id: Mapped[uuid_pkg.UUID] = mapped_column(ForeignKey("event.id"))
+    event_id: Mapped[uuid_pkg.UUID] = mapped_column(ForeignKey("events.id"))
     first_name: Mapped[str] = mapped_column(nullable=False)
     last_name: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False)
