@@ -1,4 +1,5 @@
 import uuid as uuid_pkg
+from datetime import datetime, timezone
 from typing import Sequence
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
@@ -10,7 +11,8 @@ from src.infrastructure.db.models.event import Event
 class EventRepo(BaseRepo):
 
     async def get_all(self) -> Sequence[Event]:
-        result = await self.session.execute(select(Event))
+        stmt = select(Event).options(joinedload(Event.place))
+        result = await self.session.execute(stmt)
         return result.scalars().all()
 
     async def get_by_uuid(self, uuid: uuid_pkg.UUID) -> Event | None:
@@ -34,7 +36,7 @@ class EventRepo(BaseRepo):
                 "status": stmt.excluded.status,
                 "number_of_visitors": stmt.excluded.number_of_visitors,
                 "place_uuid": stmt.excluded.place_uuid,
-                "changed_at": stmt.excluded.changed_at,
+                "updated_at": stmt.excluded.updated_at,
             },
         )
         await self.session.execute(stmt)
