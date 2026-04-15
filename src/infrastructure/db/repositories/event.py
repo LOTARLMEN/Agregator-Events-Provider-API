@@ -1,17 +1,24 @@
 import uuid as uuid_pkg
-from datetime import datetime, timezone
-from typing import Sequence
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
 from sqlalchemy import select
+from sqlalchemy.sql.functions import count
+
 from .base import BaseRepo
 from src.infrastructure.db.models.event import Event
 
 
 class EventRepo(BaseRepo):
 
-    async def get_all(self) -> Sequence[Event]:
+    async def get_all(self, limit: int, offset: int, date_from: datetime = None):
         stmt = select(Event).options(joinedload(Event.place))
+
+        if date_from:
+            stmt = stmt.where(Event.event_time >= date_from)
+
+        stmt = stmt.limit(limit).offset(offset).order_by(Event.event_time)
+
         result = await self.session.execute(stmt)
         return result.scalars().all()
 
@@ -20,6 +27,15 @@ class EventRepo(BaseRepo):
 
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_count(self, date_from=None) -> int:
+        stmt = select(count(Event.id))
+
+        if date_from:
+            stmt = stmt.where(Event.event_time >= date_from)
+
+        result = await self.session.execute(stmt)
+        return result.scalar() or 0
 
     async def upsert_all(self, events_data: list[dict]):
         if not events_data:
