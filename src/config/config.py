@@ -6,14 +6,14 @@ ENV_FILE = ROOT_DIR / ".env"
 
 
 class Setting(BaseSettings):
-    DB_HOST: str
-    DB_PORT: int
-    DB_USER: str
-    DB_PASS: str
-    DB_NAME: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_USERNAME: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DATABASE_NAME: str
 
-    EVENTS_PROVIDER_API_KEY: str
-    EVENTS_PROVIDER_BASE_URL: str
+    EVENTS_PROVIDER_API_KEY: str = "some_default_value"
+    EVENTS_PROVIDER_BASE_URL: str = "https://example.com"
 
     @property
     def DATABASE_URL(self) -> str:
