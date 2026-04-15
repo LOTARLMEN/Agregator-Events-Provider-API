@@ -16,7 +16,7 @@ async def register_ticket(
     return await usecase.reg_ticket(ticket)
 
 
-@router.delete("/{ticket_id}", status_code=status.HTTP_202_ACCEPTED)
+@router.delete("/{ticket_id}", status_code=status.HTTP_200_OK)
 async def delete_ticket(
     ticket_id: uuid.UUID, usecase: TicketRegUseCaseDep
 ) -> dict[str, bool]:
