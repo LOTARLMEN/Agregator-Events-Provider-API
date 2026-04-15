@@ -4,6 +4,6 @@ from src.infrastructure.db.uow import UnitOfWork
 
 class BaseUseCase:
 
-    def __init__(self, uow: UnitOfWork):
+    def __init__(self, uow: UnitOfWork, client: EventProviderClient):
         self.uow = uow
-        self.client = EventProviderClient()
+        self.client = client
