@@ -13,9 +13,7 @@ class Setting(BaseSettings):
     POSTGRES_DATABASE_NAME: str
 
     EVENTS_PROVIDER_API_KEY: str = "some_default_value"
-    EVENTS_PROVIDER_BASE_URL: str = (
-        "https://student-system-events-provider-web.student-system-events-provider.svc:8000"
-    )
+    EVENTS_PROVIDER_BASE_URL: str = "https://student-system-events-provider-web.student-system-events-provider.svc:8000"
 
     @property
     def DATABASE_URL(self) -> str:
