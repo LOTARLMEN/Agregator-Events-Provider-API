@@ -2,6 +2,8 @@
 
 set -e
 
+cd /app
+
 echo "Running migrations..."
 uv run alembic upgrade head
 
