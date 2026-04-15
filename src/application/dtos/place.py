@@ -1,4 +1,3 @@
-from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -14,6 +13,6 @@ class PlaceResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class DetailPlaceSchema(PlaceResponseSchema):
+class DetailPlaceResponseSchema(PlaceResponseSchema):
 
-    seats_pattern: dict[str, Any]
+    seats_pattern: str
