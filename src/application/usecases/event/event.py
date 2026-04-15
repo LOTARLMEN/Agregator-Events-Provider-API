@@ -30,6 +30,8 @@ class GetEventsUseCase(BaseUseCase):
     async def get_by_uuid(self, uuid: UUID) -> EventDetailResponseSchema:
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(uuid=uuid)
+            if event is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
             return EventDetailResponseSchema.model_validate(event)
 
     async def get_seats(self, event_id: UUID):
@@ -64,48 +66,44 @@ class AddEventsUseCase(BaseUseCase):
             meta = await self.uow.sync_meta_repo.get()
             if meta is None:
                 start_date = "2000-01-01"
+                global_max_changed_at = None
             else:
                 start_date = (
                     meta.last_changed_at.date().isoformat()
                     if meta.last_changed_at
                     else "2000-01-01"
                 )
+                global_max_changed_at = meta.last_changed_at
 
-            global_max_changed_at = meta.last_changed_at
+        async for batch in EventsPaginator(self.client, start_date):
+            if not batch:
+                continue
 
-            async for batch in EventsPaginator(self.client, start_date):
-                if not batch:
-                    continue
+            places_to_upsert = {}
+            events_to_upsert = {}
 
-                places_to_upsert = {}
-                events_to_upsert = {}
-
-                for item in batch:
-                    p = item["place"]
-                    places_to_upsert[p["id"]] = {
-                        "id": p["id"],
-                        "name": p["name"],
-                        "city": p["city"],
-                        "address": p["address"],
-                        "seats_pattern": p["seats_pattern"],
-                    }
-                    events_to_upsert[item["id"]] = {
-                        "id": item["id"],
-                        "name": item["name"],
-                        "event_time": datetime.datetime.fromisoformat(
-                            item["event_time"]
-                        ),
-                        "registration_deadline": datetime.datetime.fromisoformat(
-                            item["registration_deadline"]
-                        ),
-                        "status": item["status"],
-                        "number_of_visitors": item["number_of_visitors"],
-                        "place_uuid": p["id"],
-                        "updated_at": datetime.datetime.fromisoformat(
-                            item["changed_at"]
-                        ),
-                    }
-
+            for item in batch:
+                p = item["place"]
+                places_to_upsert[p["id"]] = {
+                    "id": p["id"],
+                    "name": p["name"],
+                    "city": p["city"],
+                    "address": p["address"],
+                    "seats_pattern": p["seats_pattern"],
+                }
+                events_to_upsert[item["id"]] = {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "event_time": datetime.datetime.fromisoformat(item["event_time"]),
+                    "registration_deadline": datetime.datetime.fromisoformat(
+                        item["registration_deadline"]
+                    ),
+                    "status": item["status"],
+                    "number_of_visitors": item["number_of_visitors"],
+                    "place_uuid": p["id"],
+                    "updated_at": datetime.datetime.fromisoformat(item["changed_at"]),
+                }
+            async with self.uow:
                 await self.uow.places_repo.upsert_all(list(places_to_upsert.values()))
                 await self.uow.events_repo.upsert_all(list(events_to_upsert.values()))
 
@@ -116,10 +114,12 @@ class AddEventsUseCase(BaseUseCase):
                 if global_max_changed_at is None or batch_max > global_max_changed_at:
                     global_max_changed_at = batch_max
 
-            if global_max_changed_at:
-                meta.last_changed_at = global_max_changed_at
+                db_meta = await self.uow.sync_meta_repo.get()
+                if db_meta:
+                    db_meta.last_changed_at = global_max_changed_at
+                    db_meta.sync_status = SyncStatus.updated
+                    db_meta.last_sync_time = datetime.datetime.now(
+                        datetime.timezone.utc
+                    )
 
-            meta.sync_status = SyncStatus.updated
-            meta.last_sync_time = datetime.datetime.now(datetime.timezone.utc)
-
-            await self.uow.commit()
+                await self.uow.commit()
