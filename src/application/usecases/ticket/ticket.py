@@ -11,7 +11,6 @@ from fastapi import status, HTTPException
 
 
 class TicketRegUseCase(BaseUseCase):
-
     async def reg_ticket(self, ticket: TicketRequestSchem) -> TicketResponseSchem:
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(ticket.event_id)

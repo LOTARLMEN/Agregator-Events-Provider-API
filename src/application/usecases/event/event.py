@@ -11,7 +11,6 @@ from src.infrastructure.db.exeptions import EventNotFoundException
 
 
 class GetEventsUseCase(BaseUseCase):
-
     async def get_events(
         self,
         paginator: PaginationSchema,
@@ -60,7 +59,6 @@ class GetEventsUseCase(BaseUseCase):
 
 
 class AddEventsUseCase(BaseUseCase):
-
     async def execute(self):
         async with self.uow:
             meta = await self.uow.sync_meta_repo.get()

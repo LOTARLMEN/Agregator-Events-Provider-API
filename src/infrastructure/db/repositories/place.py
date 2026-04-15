@@ -9,7 +9,6 @@ from src.infrastructure.db.models.place import Place
 
 
 class PlaceRepo(BaseRepo):
-
     async def get_all(self) -> Sequence[Place]:
         result = await self.session.execute(select(Place))
         return result.scalars().all()

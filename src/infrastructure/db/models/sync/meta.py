@@ -6,7 +6,6 @@ from .status import SyncStatus
 
 
 class SyncMeta(Base):
-
     id: Mapped[int] = mapped_column(primary_key=True)
     last_changed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False

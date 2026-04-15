@@ -6,7 +6,6 @@ from .base import Base
 
 
 class Ticket(Base):
-
     id: Mapped[uuid_pkg.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,

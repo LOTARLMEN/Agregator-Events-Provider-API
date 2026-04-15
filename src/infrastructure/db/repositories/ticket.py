@@ -10,7 +10,6 @@ from src.infrastructure.db.models.ticket import Ticket
 
 
 class TicketRepo(BaseRepo):
-
     async def get_tickets(self) -> Sequence[Ticket]:
         result = await self.session.execute(select(Ticket))
         return result.scalars().all()

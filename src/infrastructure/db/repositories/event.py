@@ -10,7 +10,6 @@ from src.infrastructure.db.models.event import Event
 
 
 class EventRepo(BaseRepo):
-
     async def get_all(self, limit: int, offset: int, date_from: datetime = None):
         stmt = select(Event).options(joinedload(Event.place))
 

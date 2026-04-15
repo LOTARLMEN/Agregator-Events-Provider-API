@@ -4,7 +4,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class PlaceResponseSchema(BaseModel):
-
     id: UUID
     name: str
     city: str
@@ -14,5 +13,4 @@ class PlaceResponseSchema(BaseModel):
 
 
 class DetailPlaceResponseSchema(PlaceResponseSchema):
-
     seats_pattern: str

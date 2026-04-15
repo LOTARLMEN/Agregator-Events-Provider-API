@@ -7,7 +7,6 @@ from src.application.dtos.place import PlaceResponseSchema, DetailPlaceResponseS
 
 
 class BaseEventSchema(BaseModel):
-
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -21,12 +20,10 @@ class BaseEventResponseSchema(BaseEventSchema):
 
 
 class EventDetailResponseSchema(BaseEventResponseSchema):
-
     place: DetailPlaceResponseSchema
 
 
 class EventResponseSchema(BaseEventResponseSchema):
-
     place: PlaceResponseSchema
 
 
@@ -38,7 +35,6 @@ class EventsResponseSchem(BaseEventSchema):
 
 
 class EventsSeatsResponseSchema(BaseEventSchema):
-
     id: UUID = Field(alias="event_id")
     available_seats: list[str]
 

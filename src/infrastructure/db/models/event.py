@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class Event(Base, TimestampMixin):
-
     id: Mapped[uuid_pkg.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
