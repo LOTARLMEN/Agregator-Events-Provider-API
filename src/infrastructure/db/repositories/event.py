@@ -2,7 +2,7 @@ import uuid as uuid_pkg
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.sql.functions import count
 
 from .base import BaseRepo
@@ -11,8 +11,14 @@ from src.infrastructure.db.models.event import Event
 
 class EventRepo(BaseRepo):
     async def get_all(self, limit: int, offset: int, date_from: datetime = None):
-        stmt = select(Event).options(joinedload(Event.place))
-
+        stmt = (
+            select(Event)
+            .options(joinedload(Event.place))
+            .order_by(
+                desc(Event.status == "published"),
+                Event.event_time.asc(),
+            )
+        )
         if date_from:
             stmt = stmt.where(Event.event_time >= date_from)
 
