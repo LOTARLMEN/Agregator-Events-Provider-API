@@ -37,6 +37,9 @@ class GetEventsUseCase(BaseUseCase):
     async def get_seats(self, event_id: UUID):
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(event_id)
+            if event is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
             if event.status == "finished":
                 raise EventNotFoundException(
                     status_code=status.HTTP_404_NOT_FOUND,
