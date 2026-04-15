@@ -1,9 +1,8 @@
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from sqlalchemy import UUID
 import uuid as uuid_pkg
 from .base import Base
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .event import Event
@@ -21,6 +20,6 @@ class Place(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     city: Mapped[str] = mapped_column(nullable=False)
     address: Mapped[str] = mapped_column(nullable=False)
-    seats_pattern: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    seats_pattern: Mapped[str] = mapped_column(nullable=False)
 
     events: Mapped[list["Event"]] = relationship("Event", back_populates="place")
