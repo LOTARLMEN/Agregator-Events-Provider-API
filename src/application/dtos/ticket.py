@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
 
 class TicketResponseSchem(BaseModel):
-    id: UUID = Field(alias="ticket_id", validation_alias="id")
+    ticket_id: UUID = Field(validation_alias="id")
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
