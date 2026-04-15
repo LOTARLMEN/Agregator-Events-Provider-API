@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-
+from async_lru import alru_cache
 import httpx
 from src.config.config import setting
 
@@ -44,22 +44,18 @@ class EventProviderClient:
 
             return response.json()
 
-    async def unregister(
-        self,
-        event_id: uuid.UUID,
-        ticket_body: dict,
-    ) -> dict[str, bool]:
-        url = f"{self.base_url}/api/events/{event_id}/unregister"
-
-        async with httpx.AsyncClient(follow_redirects=True) as client:
-            response = await client.post(url, headers=self.headers, data=ticket_body)
-
+    async def unregister(self, event_id: uuid.UUID, ticket_id: uuid.UUID):
+        url = f"{self.base_url}/api/events/{event_id}/unregister/"
+        async with httpx.AsyncClient() as client:
+            response = await client.request(
+                "DELETE", url, json={"ticket_id": str(ticket_id)}, headers=self.headers
+            )
             response.raise_for_status()
 
-            return response.json()
-
+    @alru_cache(maxsize=100, ttl=30)
     async def seats(self, event_id: uuid.UUID) -> dict[str, list[str]]:
-        url = f"{self.base_url}/api/events/{event_id}/seats"
+        print(f"--- РЕАЛЬНЫЙ ЗАПРОС К ПРОВАЙДЕРУ ДЛЯ {event_id} ---")
+        url = f"{self.base_url}/api/events/{event_id}/seats/"
 
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(url, headers=self.headers)
