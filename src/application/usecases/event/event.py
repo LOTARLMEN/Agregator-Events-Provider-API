@@ -1,23 +1,62 @@
 import datetime
 from uuid import UUID
+from fastapi import status, HTTPException
 
-from .base import BaseUseCase
-from src.application.dtos.event import EventResponseSchema
+from src.application.usecases.base import BaseUseCase
+from src.application.dtos.event import EventDetailResponseSchema
+from src.application.dtos.pagination import PaginationSchema
 from src.infrastructure.clients.events.paginator import EventsPaginator
 from src.infrastructure.db.models.sync.status import SyncStatus
+from src.infrastructure.db.exeptions import EventNotFoundException
 
 
 class GetEventsUseCase(BaseUseCase):
 
-    async def get_events(self) -> list[EventResponseSchema]:
+    async def get_events(
+        self,
+        paginator: PaginationSchema,
+    ) -> tuple[int, list]:
         async with self.uow:
-            events = await self.uow.events_repo.get_all()
-            return [EventResponseSchema.model_validate(event) for event in events]
+            count = await self.uow.events_repo.get_count(date_from=paginator.data_from)
 
-    async def get_by_uuid(self, uuid: UUID) -> EventResponseSchema:
+            offset = (paginator.page - 1) * paginator.page_size
+            limit = paginator.page_size
+
+            events = await self.uow.events_repo.get_all(
+                limit=limit, offset=offset, date_from=paginator.data_from
+            )
+            await self.uow.commit()
+        return count, events
+
+    async def get_by_uuid(self, uuid: UUID) -> EventDetailResponseSchema:
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(uuid=uuid)
-            return EventResponseSchema.model_validate(event)
+            return EventDetailResponseSchema.model_validate(event)
+
+    async def get_seats(self, event_id: UUID):
+        async with self.uow:
+            event = await self.uow.events_repo.get_by_uuid(event_id)
+            if event.status == "finished":
+                raise EventNotFoundException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Event {event_id} is finished",
+                )
+            if not event:
+                raise EventNotFoundException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Event {event_id} not found",
+                )
+            try:
+                client_response = await self.client.seats(event_id)
+                available_seats = client_response.get("seats", [])
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail=f"External API error: {str(e)}",
+                )
+
+            await self.uow.commit()
+        return {"event_id": event_id, "available_seats": available_seats}
 
 
 class AddEventsUseCase(BaseUseCase):
