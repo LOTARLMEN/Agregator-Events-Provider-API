@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/tickets", tags=["Билеты"])
     "", status_code=status.HTTP_201_CREATED, response_model=TicketResponseSchem
 )
 async def register_ticket(
-    usecase: TicketRegUseCaseDep, ticket: TicketRequestSchem = Depends()
+    usecase: TicketRegUseCaseDep, ticket: TicketRequestSchem
 ) -> TicketResponseSchem:
     return await usecase.reg_ticket(ticket)
 
