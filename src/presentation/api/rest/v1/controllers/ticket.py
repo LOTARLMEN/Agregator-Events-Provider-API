@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status
 from src.application.dtos.ticket import TicketResponseSchem, TicketRequestSchem
 from src.infrastructure.di import TicketRegUseCaseDep
 
