@@ -1,13 +1,12 @@
 import datetime
 from uuid import UUID
-from fastapi import status, HTTPException
 
+from src.application.exceptions import EventNotFound, EventAlreadyFinished
 from src.application.usecases.base import BaseUseCase
 from src.application.dtos.event import EventDetailResponseSchema
 from src.application.dtos.pagination import PaginationSchema
 from src.infrastructure.clients.events.paginator import EventsPaginator
 from src.infrastructure.db.models.sync.status import SyncStatus
-from src.infrastructure.db.exeptions import EventNotFoundException
 
 
 class GetEventsUseCase(BaseUseCase):
@@ -31,35 +30,23 @@ class GetEventsUseCase(BaseUseCase):
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(uuid=uuid)
             if event is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+                raise EventNotFound("Event not found.")
             return EventDetailResponseSchema.model_validate(event)
 
     async def get_seats(self, event_id: UUID):
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(event_id)
+
             if event is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+                raise EventNotFound("Event not found.")
 
             if event.status == "finished":
-                raise EventNotFoundException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Event {event_id} is finished",
-                )
-            if not event:
-                raise EventNotFoundException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Event {event_id} not found",
-                )
-            try:
-                client_response = await self.client.seats(event_id)
-                available_seats = client_response.get("seats", [])
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail=f"External API error: {str(e)}",
-                )
+                raise EventAlreadyFinished("Event already finished.")
 
+            client_response = await self.client.seats(event_id)
+            available_seats = client_response.get("seats", [])
             await self.uow.commit()
+
         return {"event_id": event_id, "available_seats": available_seats}
 
 
