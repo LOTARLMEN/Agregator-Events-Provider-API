@@ -7,7 +7,7 @@ if [ -z "$(ls -A $MIGRATIONS_DIR/*.py 2>/dev/null)" ]; then
     uv run alembic revision --autogenerate -m "auto_initial_schema"
 fi
 
-uv run alembic stamp head
+uv run alembic stamp base
 
 uv run alembic upgrade head
 
