@@ -1,16 +1,9 @@
 #!/bin/bash
 set -e
 
-# 1. Даем себе права на запись в папку миграций.
-# Без этого 'alembic revision' упадет с Permission denied.
-chmod -R 777 src/migration/versions
+echo "--- Synchronizing Database Schema State ---"
+# Мы сразу штампуем голову (head), это и есть наш файл 8e5245334c49
+uv run alembic stamp head
 
-echo "--- ГЕНЕРИРУЕМ МИГРАЦИЮ ВНУТРИ КОНТЕЙНЕРА ---"
-# Генерируем файл миграции, который сравнит модели с базой и создаст недостающее (типы, таблицы)
-uv run alembic revision --autogenerate -m "auto_fix_from_k8s"
-
-echo "--- ПРИМЕНЯЕМ ---"
-uv run alembic upgrade head
-
-echo "--- ЗАПУСК ПРИЛОЖЕНИЯ ---"
+echo "--- Starting Uvicorn ---"
 exec uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
