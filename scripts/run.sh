@@ -5,6 +5,8 @@ MIGRATIONS_DIR="src/migration/versions"
 
 if [ -z "$(ls -A $MIGRATIONS_DIR/*.py 2>/dev/null)" ]; then
     uv run alembic revision --autogenerate -m "auto_initial_schema"
+
+    uv run alembic stamp head
 fi
 
 uv run alembic upgrade head
