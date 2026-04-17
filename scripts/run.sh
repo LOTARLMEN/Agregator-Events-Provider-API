@@ -1,20 +1,18 @@
 #!/bin/bash
 set -e
 
-MIGRATIONS_DIR="src/migration/versions"
+# 1. Сначала "проглатываем" призрака.
+# Мы явно говорим: пометь версию 3c4feebf7ad8 как выполненную.
+# Это не требует прав на запись в файлы миграций.
+echo "Stamping ghost revision..."
+uv run alembic stamp 3c4feebf7ad8
 
-# 1. Мы просто связываем твою основную миграцию с призраком прямо перед запуском.
-# Это "сшьет" их в одну линию: 3c4 -> 8e5.
-sed -i "s/down_revision: Union\[str, Sequence\[str\], None\] = None/down_revision = '3c4feebf7ad8'/g" $MIGRATIONS_DIR/8e5245334c49_auto_initial_schema.py
-sed -i "s/down_revision = None/down_revision = '3c4feebf7ad8'/g" $MIGRATIONS_DIR/8e5245334c49_auto_initial_schema.py
+# 2. Теперь накатываем твою основную миграцию.
+# Так как в базе уже сидит 3c4..., Alembic увидит вторую "голову" 8e5245334c49.
+# Мы явно указываем её ID, чтобы он не путался в "Multiple heads".
+echo "Applying main migration..."
+uv run alembic upgrade 8e5245334c49
 
-# Но в самом файле призрака down_revision должен остаться None!
-# Исправляем его обратно, если sed зацепил лишнего.
-sed -i "s/down_revision = '3c4feebf7ad8'/down_revision = None/g" $MIGRATIONS_DIR/*3c4feebf7ad8*.py
-
-# 2. Просто запускаем апгрейд.
-echo "Applying migrations..."
-uv run alembic upgrade head
-
-echo "Starting server..."
+# 3. Запуск сервера
+echo "Starting app..."
 exec uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
