@@ -1,29 +1,8 @@
 #!/bin/bash
 set -e
 
-DB_URL="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}"
-
-echo "--- ВЗЛОМ СИСТЕМЫ: Очистка таблицы миграций ---"
-
-HOME=/tmp uv run python -c "
-import asyncio
-import asyncpg
-import sys
-
-async def main():
-    try:
-        # Прямое подключение без лишних проверок
-        conn = await asyncpg.connect('$DB_URL')
-        await conn.execute('DROP TABLE IF EXISTS alembic_version CASCADE')
-        await conn.close()
-        print('SUCCESS: Таблица alembic_version удалена.')
-    except Exception as e:
-        print(f'КРИТИЧЕСКАЯ ОШИБКА: {e}')
-        # Не выходим с ошибкой, чтобы скрипт шел дальше,
-        # но мы увидим лог
-
-asyncio.run(main())
-"
+uv run alembic -c src/migration/alembic.ini  -x db_url="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}" \
+  run_sql "DROP TABLE IF EXISTS alembic_version CASCADE;" || echo "SQL failed, but moving on..."
 
 MIGRATIONS_DIR="src/migration/versions"
 
