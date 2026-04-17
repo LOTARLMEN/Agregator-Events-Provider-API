@@ -3,27 +3,18 @@ set -e
 
 MIGRATIONS_DIR="src/migration/versions"
 
-echo "--- ШАГ 1: Создаем затычку для Alembic ---"
-# Создаем файл, который Alembic так отчаянно ищет
-cat <<EOF > "$MIGRATIONS_DIR/3c4feebf7ad8_ghost.py"
-revision = '3c4feebf7ad8'
-down_revision = None
-branch_labels = None
-depends_on = None
-def upgrade(): pass
-def downgrade(): pass
-EOF
+# 1. Мы просто связываем твою основную миграцию с призраком прямо перед запуском.
+# Это "сшьет" их в одну линию: 3c4 -> 8e5.
+sed -i "s/down_revision: Union\[str, Sequence\[str\], None\] = None/down_revision = '3c4feebf7ad8'/g" $MIGRATIONS_DIR/8e5245334c49_auto_initial_schema.py
+sed -i "s/down_revision = None/down_revision = '3c4feebf7ad8'/g" $MIGRATIONS_DIR/8e5245334c49_auto_initial_schema.py
 
-echo "--- ШАГ 2: Сшиваем историю (насильно) ---"
-# Мы используем sed, чтобы заменить пустой down_revision на наш ID.
-# Это сработает, даже если файл был Read-only в твоем редакторе,
-# потому что в контейнере у скрипта хватит прав.
-sed -i "s/down_revision: Union\[str, Sequence\[str\], None\] = None/down_revision = '3c4feebf7ad8'/g" "$MIGRATIONS_DIR/8e5245334c49_auto_initial_schema.py"
-sed -i "s/down_revision = None/down_revision = '3c4feebf7ad8'/g" "$MIGRATIONS_DIR/8e5245334c49_auto_initial_schema.py"
+# Но в самом файле призрака down_revision должен остаться None!
+# Исправляем его обратно, если sed зацепил лишнего.
+sed -i "s/down_revision = '3c4feebf7ad8'/down_revision = None/g" $MIGRATIONS_DIR/*3c4feebf7ad8*.py
 
-echo "--- ШАГ 3: Запуск миграций ---"
-# Теперь цепочка такая: None -> 3c4feebf7ad8 (затычка) -> 8e5245334c49 (твои таблицы)
+# 2. Просто запускаем апгрейд.
+echo "Applying migrations..."
 uv run alembic upgrade head
 
-echo "--- ШАГ 4: Старт сервера ---"
+echo "Starting server..."
 exec uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
