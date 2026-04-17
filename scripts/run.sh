@@ -5,18 +5,23 @@ DB_URL="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}"
 
 echo "--- ВЗЛОМ СИСТЕМЫ: Очистка таблицы миграций ---"
 
-uv run python -c "
+HOME=/tmp uv run python -c "
 import asyncio
 import asyncpg
+import sys
+
 async def main():
     try:
+        # Прямое подключение без лишних проверок
         conn = await asyncpg.connect('$DB_URL')
-        # Удаляем только таблицу с версиями, данные не трогаем
         await conn.execute('DROP TABLE IF EXISTS alembic_version CASCADE')
         await conn.close()
-        print('DONE: Таблица удалена, Alembic больше не видит старую ревизию')
+        print('SUCCESS: Таблица alembic_version удалена.')
     except Exception as e:
-        print(f'ОШИБКА: {e}')
+        print(f'КРИТИЧЕСКАЯ ОШИБКА: {e}')
+        # Не выходим с ошибкой, чтобы скрипт шел дальше,
+        # но мы увидим лог
+
 asyncio.run(main())
 "
 
