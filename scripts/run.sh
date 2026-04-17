@@ -1,19 +1,6 @@
 #!/bin/bash
 set -e
 
-DB_URL="postgresql://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}"
-uv run python -c "
-from sqlalchemy import create_engine, text
-try:
-    engine = create_engine('$DB_URL')
-    with engine.connect() as conn:
-        conn.execute(text('DROP TABLE IF EXISTS alembic_version CASCADE'))
-        conn.commit()
-    print('Таблица alembic_version успешно удалена')
-except Exception as e:
-    print(f'Ошибка при удалении таблицы: {e}')
-"
-
 MIGRATIONS_DIR="src/migration/versions"
 
 if [ -z "$(ls -A $MIGRATIONS_DIR/*.py 2>/dev/null)" ]; then
