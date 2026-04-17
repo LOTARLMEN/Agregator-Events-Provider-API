@@ -1,7 +1,9 @@
-import asyncio
 import uuid
 from async_lru import alru_cache
 import httpx
+from httpx import ConnectTimeout, HTTPStatusError
+from urllib.parse import urljoin
+from src.application.exceptions import ProviderTimeout, ProviderError
 from src.config.config import setting
 
 
@@ -19,57 +21,67 @@ class EventProviderClient:
     ) -> dict:
         if cursor:
             url = cursor
+            params = None
         else:
-            url = f"{self.base_url}/events/?changed_at={changed_at}"
+            url = urljoin(self.base_url, "events/")
+            params = {"changed_at": changed_at}
 
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            response = await client.get(url, headers=self.headers)
-
-            response.raise_for_status()
-
-            return response.json()
+            try:
+                response = await client.get(url, headers=self.headers, params=params)
+                response.raise_for_status()
+                return response.json()
+            except ConnectTimeout:
+                raise ProviderTimeout("Provider server timed out.")
+            except HTTPStatusError as e:
+                raise ProviderError(f"Provider failed to register. Error: {e}")
 
     async def register(
         self,
         event_id: uuid.UUID,
         user_body: dict,
     ) -> dict[str, bool]:
-        url = f"{self.base_url}/api/events/{event_id}/register/"
-
+        path = f"api/events/{event_id}/register/"
+        url = urljoin(self.base_url, path)
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            response = await client.post(url, headers=self.headers, data=user_body)
-
-            response.raise_for_status()
-
-            return response.json()
+            try:
+                response = await client.post(url, headers=self.headers, data=user_body)
+                response.raise_for_status()
+                return response.json()
+            except ConnectTimeout:
+                raise ProviderTimeout("Provider server timed out.")
+            except HTTPStatusError as e:
+                raise ProviderError(f"Provider failed to register. Error: {e}")
 
     async def unregister(self, event_id: uuid.UUID, ticket_id: uuid.UUID):
-        url = f"{self.base_url}/api/events/{event_id}/unregister/"
+        path = f"api/events/{event_id}/unregister/"
+        url = urljoin(self.base_url, path)
         async with httpx.AsyncClient() as client:
-            response = await client.request(
-                "DELETE", url, json={"ticket_id": str(ticket_id)}, headers=self.headers
-            )
-            response.raise_for_status()
+            try:
+                response = await client.request(
+                    "DELETE",
+                    url,
+                    json={"ticket_id": str(ticket_id)},
+                    headers=self.headers,
+                )
+                response.raise_for_status()
+            except ConnectTimeout:
+                raise ProviderTimeout("Provider server timed out.")
+            except HTTPStatusError as e:
+                raise ProviderError(f"Provider failed to unregister. Error: {e}")
 
     @alru_cache(maxsize=100, ttl=30)
     async def seats(self, event_id: uuid.UUID) -> dict[str, list[str]]:
-        print(f"--- РЕАЛЬНЫЙ ЗАПРОС К ПРОВАЙДЕРУ ДЛЯ {event_id} ---")
-        url = f"{self.base_url}/api/events/{event_id}/seats/"
+        path = f"api/events/{event_id}/seats/"
+        url = urljoin(self.base_url, path)
 
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            response = await client.get(url, headers=self.headers)
+            try:
+                response = await client.get(url, headers=self.headers)
+                response.raise_for_status()
+                return response.json()
 
-            response.raise_for_status()
-
-            return response.json()
-
-
-async def main():
-    client = EventProviderClient()
-    events = await client.events()
-    for event in events:
-        print(event)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+            except ConnectTimeout:
+                raise ProviderTimeout("Provider server timed out.")
+            except HTTPStatusError as e:
+                raise ProviderError(f"Provider failed to seats. Error: {e}")
