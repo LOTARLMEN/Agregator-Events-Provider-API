@@ -1,13 +1,15 @@
 from datetime import datetime
-from .base import Base
-from sqlalchemy import UUID, ForeignKey, DateTime
+from src.infrastructure.db.models.base import Base
+from sqlalchemy import UUID, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 import uuid as uuid_pkg
-from .mixins import TimestampMixin
+
+from src.infrastructure.db.models.event.status import EventStatus
+from src.infrastructure.db.models.mixins import TimestampMixin
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .place import Place
+    from src.infrastructure.db.models.place import Place
 
 
 class Event(Base, TimestampMixin):
@@ -23,5 +25,5 @@ class Event(Base, TimestampMixin):
     place_uuid: Mapped[uuid_pkg.UUID] = mapped_column(ForeignKey("places.id"))
     event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     registration_deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    status: Mapped[str] = mapped_column(nullable=False)
+    status: Mapped[EventStatus] = mapped_column(Enum(EventStatus), nullable=False)
     number_of_visitors: Mapped[int] = mapped_column(default=0)
