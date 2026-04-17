@@ -1,4 +1,3 @@
-import asyncio
 from src.infrastructure.clients.events.provider import EventProviderClient
 
 
@@ -23,13 +22,3 @@ class EventsPaginator:
             next_page = result["next"]
             if not next_page:
                 break
-
-
-if __name__ == "__main__":
-    client = EventProviderClient()
-
-    async def main():
-        async for result in EventsPaginator(client):
-            print(result)
-
-    asyncio.run(main())
