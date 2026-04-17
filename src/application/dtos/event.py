@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from src.application.dtos.place import PlaceResponseSchema, DetailPlaceResponseSchema
 
@@ -32,11 +32,6 @@ class EventsResponseSchem(BaseEventSchema):
     next: str | None
     previous: str | None
     results: list[EventResponseSchema]
-
-
-class EventsSeatsResponseSchema(BaseEventSchema):
-    id: UUID = Field(alias="event_id")
-    available_seats: list[str]
 
 
 class EventSeatsResponseSchem(BaseModel):
