@@ -11,6 +11,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import ENUM
 
 # revision identifiers, used by Alembic.
 revision: str = "b3a202fdebdb"
@@ -20,33 +21,35 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Upgrade schema."""
-
-    # 1. Безопасно создаем типы ENUM через анонимный блок Postgres
-    # Это предотвратит ошибку "already exists"
     op.execute(
-        "DO $$ BEGIN "
-        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'outboxstatus') THEN "
-        "CREATE TYPE outboxstatus AS ENUM ('SENT', 'PENDING'); "
-        "END IF; "
-        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'syncstatus') THEN "
-        "CREATE TYPE syncstatus AS ENUM ('failed', 'updated'); "
-        "END IF; "
-        "END $$;"
+        """
+    DO $$ BEGIN
+        CREATE TYPE outboxstatus AS ENUM ('SENT', 'PENDING');
+    EXCEPTION
+        WHEN duplicate_object THEN null;
+    END $$;
+    """
     )
 
-    # 2. Создаем таблицы
+    op.execute(
+        """
+    DO $$ BEGIN
+        CREATE TYPE syncstatus AS ENUM ('failed', 'updated');
+    EXCEPTION
+        WHEN duplicate_object THEN null;
+    END $$;
+    """
+    )
+
+    outbox_status = ENUM("SENT", "PENDING", name="outboxstatus")
+    sync_status = ENUM("failed", "updated", name="syncstatus")
+
     op.create_table(
         "outboxs",
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("event_type", sa.String(), nullable=False),
         sa.Column("payload", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        # create_type=False — это ВАЖНО!
-        sa.Column(
-            "status",
-            sa.Enum("SENT", "PENDING", name="outboxstatus", create_type=False),
-            nullable=False,
-        ),
+        sa.Column("status", outbox_status, nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("id"),
@@ -57,20 +60,15 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("last_changed_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("last_sync_time", sa.DateTime(timezone=True), nullable=False),
-        # Здесь тоже create_type=False
-        sa.Column(
-            "sync_status",
-            sa.Enum("failed", "updated", name="syncstatus", create_type=False),
-            nullable=False,
-        ),
+        sa.Column("sync_status", sync_status, nullable=False),
         sa.Column("error_details", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
 
 
 def downgrade() -> None:
-    """Downgrade schema."""
     op.drop_table("sync_metas")
     op.drop_table("outboxs")
-    # Типы ENUM при откате обычно лучше не удалять вручную,
-    # чтобы не сломать другие миграции, если нет доступа к базе.
+
+    op.execute("DROP TYPE IF EXISTS outboxstatus")
+    op.execute("DROP TYPE IF EXISTS syncstatus")
