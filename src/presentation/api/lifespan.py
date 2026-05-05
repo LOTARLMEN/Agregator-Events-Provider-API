@@ -1,5 +1,6 @@
+import asyncio
 from contextlib import asynccontextmanager
-from src.infrastructure.db.session import db_helper
+from src.infrastructure.db.session import get_async_session
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -9,9 +10,11 @@ from src.application.usecases import AddEventsUseCase
 from src.infrastructure.db.uow import UnitOfWork
 from src.infrastructure.di import event_client
 
+from src.infrastructure.workers.outbox import run_worker
+
 
 async def sync_job():
-    async with db_helper.get_session() as session:
+    async for session in get_async_session():
         uow = UnitOfWork(session)
         usecase = AddEventsUseCase(uow, event_client)
         await usecase.execute()
@@ -25,7 +28,12 @@ async def lifespan(app: FastAPI):
         CronTrigger(hour=0, minute=0),
     )
     scheduler.start()
-
+    task = asyncio.create_task(run_worker())
     yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
     scheduler.shutdown()
