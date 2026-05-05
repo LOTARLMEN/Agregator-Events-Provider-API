@@ -13,7 +13,7 @@ from src.infrastructure.db.models.event import Event  # noqa: F401
 from src.infrastructure.db.models.place import Place  # noqa: F401
 from src.infrastructure.db.models.sync.meta import SyncMeta  # noqa: F401
 from src.infrastructure.db.models.ticket import Ticket  # noqa: F401
-from src.infrastructure.db.models.outbox import Outbox  # noqa: F401
+from src.infrastructure.db.models.outbox.outbox import Outbox  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
