@@ -33,7 +33,7 @@ class OutboxRepo(BaseRepo):
             .with_for_update(skip_locked=True)
         )
         events = await self.session.execute(stmt)
-        return events.scalars().all()
+        return events.scalars().all()  # noqa: F401
 
     async def update_status(
         self,
