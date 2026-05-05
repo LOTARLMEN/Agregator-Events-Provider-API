@@ -1,10 +1,7 @@
 from typing import Any
 from uuid import UUID
-
 from sqlalchemy import select, update
-
 from src.infrastructure.db.models.outbox.outbox import Outbox
-
 from src.infrastructure.db.models.outbox.status import OutboxStatus
 from src.infrastructure.db.repositories.base import BaseRepo
 
