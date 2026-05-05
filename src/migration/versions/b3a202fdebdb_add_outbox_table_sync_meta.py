@@ -8,8 +8,6 @@ Create Date: 2026-05-04 13:23:51.236562
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "b3a202fdebdb"
@@ -19,7 +17,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # ✅ безопасное создание ENUM типов (PostgreSQL-safe)
+    # =========================
+    # ENUM SAFE CREATE
+    # =========================
     op.execute("""
     DO $$
     BEGIN
@@ -38,38 +38,43 @@ def upgrade() -> None:
     END $$;
     """)
 
-    # ❗ ВАЖНО: НЕ используем sa.Enum тут, чтобы SQLAlchemy не пытался создать тип заново
+    # =========================
+    # TABLE SAFE CREATE
+    # =========================
+    op.execute("""
+    DO $$
+    BEGIN
+        CREATE TABLE IF NOT EXISTS outboxs (
+            id UUID PRIMARY KEY,
+            event_type VARCHAR NOT NULL,
+            payload JSONB NOT NULL,
+            status VARCHAR NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL
+        );
+    EXCEPTION
+        WHEN duplicate_table THEN null;
+    END $$;
+    """)
 
-    op.create_table(
-        "outboxs",
-        sa.Column("id", sa.UUID(), nullable=False),
-        sa.Column("event_type", sa.String(), nullable=False),
-        sa.Column("payload", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-
-        # используем TEXT вместо ENUM (чтобы не было автосоздания типов)
-        sa.Column("status", sa.String(), nullable=False),
-
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("id"),
-    )
-
-    op.create_table(
-        "sync_metas",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("last_changed_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("last_sync_time", sa.DateTime(timezone=True), nullable=False),
-
-        # тоже убираем ENUM → String
-        sa.Column("sync_status", sa.String(), nullable=False),
-
-        sa.Column("error_details", sa.String(), nullable=True),
-        sa.PrimaryKeyConstraint("id"),
-    )
+    op.execute("""
+    DO $$
+    BEGIN
+        CREATE TABLE IF NOT EXISTS sync_metas (
+            id SERIAL PRIMARY KEY,
+            last_changed_at TIMESTAMPTZ NOT NULL,
+            last_sync_time TIMESTAMPTZ NOT NULL,
+            sync_status VARCHAR NOT NULL,
+            error_details VARCHAR
+        );
+    EXCEPTION
+        WHEN duplicate_table THEN null;
+    END $$;
+    """)
 
 
 def downgrade() -> None:
-    op.drop_table("sync_metas")
-    op.drop_table("outboxs")
+    op.execute("DROP TABLE IF EXISTS sync_metas")
+    op.execute("DROP TABLE IF EXISTS outboxs")
 
     op.execute("DROP TYPE IF EXISTS outboxstatus")
     op.execute("DROP TYPE IF EXISTS syncstatus")
