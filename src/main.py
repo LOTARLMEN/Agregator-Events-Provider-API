@@ -1,10 +1,24 @@
+import sentry_sdk
 import uvicorn
 from fastapi import FastAPI
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.starlette import StarletteIntegration
 
 from src.presentation.api.rest.handlers import handlers_mapping
+from src.config.config import setting
 
 from src.presentation.api.rest.router import router
 from src.presentation.api.lifespan import lifespan
+
+
+sentry_sdk.init(
+    dsn=setting.SENTRY_DSN,
+    integrations=[
+        StarletteIntegration(),
+        FastApiIntegration(),
+    ],
+    traces_sample_rate=1.0,
+)
 
 app = FastAPI(lifespan=lifespan, title="Event Aggregator API")
 
@@ -15,4 +29,4 @@ app.include_router(router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", reload=True, port=8000)
+    uvicorn.run(app, port=8000)
