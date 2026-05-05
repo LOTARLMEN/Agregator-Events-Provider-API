@@ -3,3 +3,10 @@ app_module := "src.main:app"
 
 start:
     uv run uvicorn {{app_module}} --reload --host 127.0.0.1 --port 8000
+
+migrate msg:
+    uv run alembic revision --autogenerate -m "{{msg}}"
+
+
+fix:
+    uv run ruff check . --fix
