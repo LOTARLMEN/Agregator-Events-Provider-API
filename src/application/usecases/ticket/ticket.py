@@ -54,6 +54,17 @@ class TicketRegUseCase(BaseUseCase):
                 ticket, ticket_id=provider_ticket_id
             )
 
+            payload = {
+                "reference_id": new_ticket.id,
+                "message": f"Ticket {new_ticket.id} has been registered.",
+                "idempotency_key": ticket.idempotency_key,
+            }
+
+            await self.uow.outbox_repo.add(
+                event_type="ticket_registration",
+                payload=payload,
+            )
+
             await self.uow.commit()
 
             return TicketResponseSchem(id=new_ticket.id)
