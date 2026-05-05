@@ -3,6 +3,7 @@ from types import TracebackType
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.infrastructure.db.repositories.event import EventRepo
+from src.infrastructure.db.repositories.outbox import OutboxRepo
 from src.infrastructure.db.repositories.place import PlaceRepo
 from src.infrastructure.db.repositories.sync_meta import SyncMetaRepo
 from src.infrastructure.db.repositories.ticket import TicketRepo
@@ -16,6 +17,7 @@ class UnitOfWork:
         self.places_repo = PlaceRepo(self.session)
         self.sync_meta_repo = SyncMetaRepo(self.session)
         self.ticket_repo = TicketRepo(self.session)
+        self.outbox_repo = OutboxRepo(self.session)
 
     async def __aenter__(self) -> "UnitOfWork":
         return self
