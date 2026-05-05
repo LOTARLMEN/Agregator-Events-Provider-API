@@ -12,8 +12,11 @@ class Setting(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DATABASE_NAME: str
 
-    EVENTS_PROVIDER_API_KEY: str
+    X_API_KEY: str
     EVENTS_PROVIDER_BASE_URL: str
+    CAPASHINO_BASE_URL: str
+
+    SENTRY_DSN: str
 
     @property
     def DATABASE_URL(self) -> str:
