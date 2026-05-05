@@ -1,3 +1,4 @@
+from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
@@ -15,3 +16,4 @@ class TicketRequestSchem(BaseModel):
     last_name: str
     email: EmailStr
     seat: str
+    idempotency_key: Annotated[str | None, Field(min_length=1, max_length=64)]
