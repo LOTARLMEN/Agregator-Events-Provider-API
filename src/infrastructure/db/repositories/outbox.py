@@ -7,7 +7,6 @@ from src.infrastructure.db.repositories.base import BaseRepo
 
 
 class OutboxRepo(BaseRepo):
-
     async def add(
         self,
         event_type: str,
