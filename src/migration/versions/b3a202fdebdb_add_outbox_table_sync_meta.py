@@ -20,28 +20,33 @@ def upgrade() -> None:
     # =========================
     # ENUM SAFE CREATE
     # =========================
-    op.execute("""
+    op.execute(
+        """
     DO $$
     BEGIN
         CREATE TYPE outboxstatus AS ENUM ('SENT', 'PENDING');
     EXCEPTION
         WHEN duplicate_object THEN null;
     END $$;
-    """)
+    """
+    )
 
-    op.execute("""
+    op.execute(
+        """
     DO $$
     BEGIN
         CREATE TYPE syncstatus AS ENUM ('failed', 'updated');
     EXCEPTION
         WHEN duplicate_object THEN null;
     END $$;
-    """)
+    """
+    )
 
     # =========================
     # TABLE SAFE CREATE
     # =========================
-    op.execute("""
+    op.execute(
+        """
     DO $$
     BEGIN
         CREATE TABLE IF NOT EXISTS outboxs (
@@ -54,9 +59,11 @@ def upgrade() -> None:
     EXCEPTION
         WHEN duplicate_table THEN null;
     END $$;
-    """)
+    """
+    )
 
-    op.execute("""
+    op.execute(
+        """
     DO $$
     BEGIN
         CREATE TABLE IF NOT EXISTS sync_metas (
@@ -69,7 +76,8 @@ def upgrade() -> None:
     EXCEPTION
         WHEN duplicate_table THEN null;
     END $$;
-    """)
+    """
+    )
 
 
 def downgrade() -> None:
