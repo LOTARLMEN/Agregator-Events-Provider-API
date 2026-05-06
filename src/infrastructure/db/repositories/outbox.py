@@ -44,7 +44,7 @@ class OutboxRepo(BaseRepo):
 
     async def get_by_idempotency_key(self, idempotency_key: str) -> Outbox | None:
         stmt = select(Outbox).where(
-            Outbox.payload["idempotency_key"] == idempotency_key
+            Outbox.payload["idempotency_key"].astext == idempotency_key
         )
         result = await self.session.execute(stmt)
         return result.scalars().first()
