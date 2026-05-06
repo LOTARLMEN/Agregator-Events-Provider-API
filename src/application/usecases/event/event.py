@@ -24,7 +24,6 @@ class GetEventsUseCase(BaseUseCase):
             events = await self.uow.events_repo.get_all(
                 limit=limit, offset=offset, date_from=paginator.data_from
             )
-            await self.uow.commit()
         return count, events
 
     async def get_by_uuid(self, uuid: UUID) -> EventDetailResponseSchema:
@@ -44,16 +43,15 @@ class GetEventsUseCase(BaseUseCase):
             if event.status == "finished":
                 raise EventAlreadyFinished("Event already finished.")
 
+            await self.uow.commit()
+
             client_response = await self.client.seats(event_id)
             available_seats = client_response.get("seats", [])
-            await self.uow.commit()
 
         return {"event_id": event_id, "available_seats": available_seats}
 
 
 class AddEventsUseCase(BaseUseCase):
-    CHUNK_SIZE = 50
-
     async def execute(self):
         meta = await self.uow.sync_meta_repo.get()
 
