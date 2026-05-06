@@ -26,7 +26,7 @@ class CapashinoClient:
             "idempotency_key": str(idempotency_key),
         }
 
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
             response = await client.post(
                 url,
                 headers=self.__headers,
