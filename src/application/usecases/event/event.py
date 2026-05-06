@@ -53,89 +53,91 @@ class GetEventsUseCase(BaseUseCase):
 
 
 class AddEventsUseCase(BaseUseCase):
-    async def execute(self):
-        async with self.uow:
-            await self.uow.session.execute(text("SELECT pg_advisory_lock(987654321)"))
+    LOCK_ID = 987654321
+    CHUNK_SIZE = 50
 
-            meta = await self.uow.sync_meta_repo.get()
-            if meta is None:
-                start_date = "2000-01-01"
-                global_max_changed_at = None
-            else:
-                start_date = (
-                    meta.last_changed_at.date().isoformat()
-                    if meta.last_changed_at
-                    else "2000-01-01"
-                )
-                global_max_changed_at = meta.last_changed_at
+    async def execute(self):
+        await self.uow.session.execute(
+            text("SELECT pg_advisory_lock(:id)"), {"id": self.LOCK_ID}
+        )
 
         try:
-            async for batch in EventsPaginator(self.client, start_date):
-                if not batch:
-                    continue
+            meta = await self.uow.sync_meta_repo.get()
+            start_date = (
+                meta.last_changed_at.date().isoformat()
+                if meta and meta.last_changed_at
+                else "2000-01-01"
+            )
+            global_max_changed_at = meta.last_changed_at if meta else None
 
-                places_to_upsert = {}
-                events_to_upsert = {}
+            batch_counter = 0
 
-                for item in batch:
-                    p = item["place"]
+            async with self.uow:
+                async for batch in EventsPaginator(self.client, start_date):
+                    if not batch:
+                        continue
 
-                    places_to_upsert[p["id"]] = {
-                        "id": p["id"],
-                        "name": p["name"],
-                        "city": p["city"],
-                        "address": p["address"],
-                        "seats_pattern": p["seats_pattern"],
-                    }
+                    places_dict = {}
+                    events_list = []
 
-                    events_to_upsert[item["id"]] = {
-                        "id": item["id"],
-                        "name": item["name"],
-                        "event_time": datetime.datetime.fromisoformat(
-                            item["event_time"]
-                        ),
-                        "registration_deadline": datetime.datetime.fromisoformat(
-                            item["registration_deadline"]
-                        ),
-                        "status": item["status"],
-                        "number_of_visitors": item["number_of_visitors"],
-                        "place_uuid": p["id"],
-                        "updated_at": datetime.datetime.fromisoformat(
-                            item["changed_at"]
-                        ),
-                    }
+                    for item in batch:
+                        p = item["place"]
 
-                async with self.uow:
-                    await self.uow.places_repo.upsert_all(
-                        list(places_to_upsert.values())
-                    )
-                    await self.uow.events_repo.upsert_all(
-                        list(events_to_upsert.values())
-                    )
+                        if p["id"] not in places_dict:
+                            places_dict[p["id"]] = {
+                                "id": p["id"],
+                                "name": p["name"],
+                                "city": p["city"],
+                                "address": p["address"],
+                                "seats_pattern": p["seats_pattern"],
+                            }
+
+                        events_list.append(
+                            {
+                                "id": item["id"],
+                                "name": item["name"],
+                                "event_time": datetime.datetime.fromisoformat(
+                                    item["event_time"]
+                                ),
+                                "registration_deadline": datetime.datetime.fromisoformat(
+                                    item["registration_deadline"]
+                                ),
+                                "status": item["status"],
+                                "number_of_visitors": item["number_of_visitors"],
+                                "place_uuid": p["id"],
+                                "updated_at": datetime.datetime.fromisoformat(
+                                    item["changed_at"]
+                                ),
+                            }
+                        )
+
+                    await self.uow.places_repo.upsert_all(list(places_dict.values()))
+                    await self.uow.events_repo.upsert_all(events_list)
+
+                    batch_counter += 1
+                    if batch_counter % self.CHUNK_SIZE == 0:
+                        await self.uow.commit()
 
                     batch_max = max(
                         datetime.datetime.fromisoformat(item["changed_at"])
                         for item in batch
                     )
-
-                    if (
-                        global_max_changed_at is None
-                        or batch_max > global_max_changed_at
-                    ):
+                    if not global_max_changed_at or batch_max > global_max_changed_at:
                         global_max_changed_at = batch_max
 
-                    db_meta = await self.uow.sync_meta_repo.get()
-                    if db_meta:
-                        db_meta.last_changed_at = global_max_changed_at
-                        db_meta.sync_status = SyncStatus.updated
-                        db_meta.last_sync_time = datetime.datetime.now(
-                            datetime.timezone.utc
-                        )
+                await self.uow.commit()
 
-                    await self.uow.commit()
+            async with self.uow:
+                db_meta = await self.uow.sync_meta_repo.get()
+                if db_meta:
+                    db_meta.last_changed_at = global_max_changed_at
+                    db_meta.sync_status = SyncStatus.updated
+                    db_meta.last_sync_time = datetime.datetime.now(
+                        datetime.timezone.utc
+                    )
+                await self.uow.commit()
 
         finally:
-            async with self.uow:
-                await self.uow.session.execute(
-                    text("SELECT pg_advisory_unlock(987654321)")
-                )
+            await self.uow.session.execute(
+                text("SELECT pg_advisory_unlock(:id)"), {"id": self.LOCK_ID}
+            )

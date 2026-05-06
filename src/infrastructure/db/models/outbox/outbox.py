@@ -4,7 +4,8 @@ from typing import Any
 
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import UUID, Enum, DateTime
+from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy import UUID, DateTime
 import uuid as uuid_pkg
 from src.infrastructure.db.models.base import Base
 from src.infrastructure.db.models.outbox.status import OutboxStatus
@@ -20,7 +21,7 @@ class Outbox(Base):
     event_type: Mapped[str] = mapped_column(nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     status: Mapped[OutboxStatus] = mapped_column(
-        Enum(OutboxStatus),
+        ENUM(OutboxStatus, name="outboxstatus", create_type=False),
         nullable=False,
         index=True,
     )

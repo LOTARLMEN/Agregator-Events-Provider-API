@@ -35,15 +35,19 @@ class TicketRepo(BaseRepo):
         return new_ticket
 
     async def delete(self, ticket_id: uuid_pkg.UUID) -> bool:
-        stmt = delete(Ticket).where(Ticket.id == ticket_id)
+        stmt = (
+            delete(Ticket)
+            .where(Ticket.id == ticket_id)
+            .execution_options(synchronize_session=False)
+        )
         result = await self.session.execute(stmt)
         return result.rowcount > 0
 
     async def is_ticket_in(self, ticket: TicketRequestSchem) -> bool:
-        query = select(Ticket).where(
-            Ticket.event_id == ticket.event_id, Ticket.seat == ticket.seat
+        stmt = select(Ticket.id).where(
+            Ticket.event_id == ticket.event_id,
+            Ticket.seat == ticket.seat,
         )
-        result = await self.session.execute(query)
-        found_ticket = result.scalars().first()
 
-        return found_ticket is not None
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none() is not None
