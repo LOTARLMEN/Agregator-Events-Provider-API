@@ -20,6 +20,8 @@ class PlaceRepo(BaseRepo):
         return result.scalar_one_or_none()
 
     async def upsert_all(self, places_data: list[dict]):
+        places_data.sort(key=lambda x: str(x["id"]))
+
         stmt = insert(Place).values(places_data)
         stmt = stmt.on_conflict_do_update(
             index_elements=[Place.id],
