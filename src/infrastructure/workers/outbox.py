@@ -22,9 +22,14 @@ async def run_worker():
             processed_ids = []
 
             for event in events:
+                event_idempotency_key = event.payload.get("idempotency_key", event.id)
                 message = event.payload.get("message")
                 reference_id = event.payload.get("reference_id")
-                idempotency_key = event.payload.get("idempotency_key", event.id)
+                idempotency_key = (
+                    event.id
+                    if event_idempotency_key == "string"
+                    else event_idempotency_key
+                )
 
                 try:
                     await capashino_client.notifications(
