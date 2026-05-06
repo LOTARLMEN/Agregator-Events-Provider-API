@@ -104,6 +104,15 @@ async def event_already_finished_handler(
     )
 
 
+async def idempotency_key_exist_handler(
+    request: Request, exc: ex.IdempotencyKeyAlreadyExist
+):
+    return JSONResponse(
+        status_code=status.HTTP_409_NOT_FOUND,
+        content={"detail": exc.message},
+    )
+
+
 handlers_mapping = {
     RequestValidationError: validation_error_handler,
     ex.ProviderError: provider_errors_handler,
@@ -114,4 +123,5 @@ handlers_mapping = {
     ex.TicketIsRegistered: ticket_already_exist_handler,
     ex.EventNotFound: event_not_found_handler,
     ex.RegistrationDeadlinePasses: reg_deadline_handler,
+    ex.IdempotencyKeyAlreadyExist: idempotency_key_exist_handler,
 }
