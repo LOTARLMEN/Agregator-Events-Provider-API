@@ -20,9 +20,29 @@ class TicketRegUseCase(BaseUseCase):
     async def reg_ticket(self, ticket: TicketRequestSchem) -> TicketResponseSchem:
         async with self.uow:
             event = await self.uow.events_repo.get_by_uuid(ticket.event_id)
-
             if not event:
                 raise EventNotFound("Event not found.")
+
+            if ticket.idempotency_key:
+                existing_event = await self.uow.outbox_repo.get_by_idempotency_key(
+                    ticket.idempotency_key
+                )
+                if existing_event:
+                    existing_ticket = await self.uow.ticket_repo.get_by_uuid(
+                        existing_event.payload["reference_id"]
+                    )
+
+                    if (
+                        existing_ticket.first_name == ticket.first_name
+                        and existing_ticket.last_name == ticket.last_name
+                        and existing_ticket.email == ticket.email
+                        and existing_ticket.seat == ticket.seat
+                    ):
+                        return TicketResponseSchem(id=existing_ticket.id)
+                    else:
+                        raise IdempotencyKeyAlreadyExist(
+                            "Idempotency key already exists."
+                        )
 
             if event.status != EventStatus.PUBLISHED:
                 raise EventNotPublished("Event not published.")
@@ -37,7 +57,6 @@ class TicketRegUseCase(BaseUseCase):
                 raise TicketIsRegistered("Ticket already registered.")
 
             available_seats = await self.client.seats(ticket.event_id)
-
             if ticket.seat not in available_seats["seats"]:
                 raise SeatNotAvailable("Seat not available.")
 
@@ -47,30 +66,6 @@ class TicketRegUseCase(BaseUseCase):
                 "email": ticket.email,
                 "seat": ticket.seat,
             }
-            if ticket.idempotency_key:
-                existing_event = await self.uow.outbox_repo.get_by_idempotency_key(
-                    ticket.idempotency_key
-                )
-                if existing_event:
-                    existing_ticket = await self.uow.ticket_repo.get_by_uuid(
-                        existing_event.payload["reference_id"]
-                    )
-
-                    existing_data = {
-                        "first_name": existing_ticket.first_name,
-                        "last_name": existing_ticket.last_name,
-                        "email": existing_ticket.email,
-                        "seat": existing_ticket.seat,
-                    }
-
-                    if user_data == existing_data:
-                        return TicketResponseSchem(
-                            id=existing_event.payload["reference_id"]
-                        )
-                    else:
-                        raise IdempotencyKeyAlreadyExist(
-                            "Idempotency key already exists."
-                        )
 
             provider_res = await self.client.register(ticket.event_id, user_data)
             provider_ticket_id = provider_res["ticket_id"]
@@ -91,7 +86,6 @@ class TicketRegUseCase(BaseUseCase):
             )
 
             await self.uow.commit()
-
             return TicketResponseSchem(id=new_ticket.id)
 
     async def del_ticket(self, ticket_id: uuid.UUID) -> dict[str, bool]:
