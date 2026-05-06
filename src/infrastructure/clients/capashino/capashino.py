@@ -27,15 +27,10 @@ class CapashinoClient:
         }
 
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            try:
-                response = await client.post(
-                    url,
-                    headers=self.__headers,
-                    json=payload,
-                )
-                response.raise_for_status()
-                return response.json()
-            except httpx.HTTPStatusError as e:
-                raise e
-            except Exception as e:
-                raise e
+            response = await client.post(
+                url,
+                headers=self.__headers,
+                json=payload,
+            )
+            response.raise_for_status()
+            return response.json()
