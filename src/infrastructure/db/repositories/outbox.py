@@ -41,3 +41,10 @@ class OutboxRepo(BaseRepo):
     ) -> None:
         stmt = update(Outbox).where(Outbox.id.in_(ids)).values(status=status)
         await self.session.execute(stmt)
+
+    async def get_by_idempotency_key(self, idempotency_key: str) -> Outbox | None:
+        stmt = select(Outbox).where(
+            Outbox.payload["idempotency_key"] == idempotency_key
+        )
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
