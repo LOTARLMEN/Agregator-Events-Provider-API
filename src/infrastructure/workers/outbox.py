@@ -3,6 +3,8 @@ import asyncio
 import sentry_sdk
 from httpx import HTTPStatusError
 
+from fastapi import HTTPException
+
 from src.infrastructure.db.session import get_async_session
 from src.infrastructure.db.repositories.outbox import OutboxRepo
 from src.infrastructure.clients.capashino.capashino import CapashinoClient
@@ -20,7 +22,6 @@ async def run_worker():
                 await asyncio.sleep(5)
                 continue
             processed_ids = []
-
             for event in events:
                 event_idempotency_key = event.payload.get("idempotency_key", event.id)
                 message = event.payload.get("message")
@@ -43,6 +44,7 @@ async def run_worker():
                         sentry_sdk.capture_exception(e)
                     if e.response.status_code == 409:
                         processed_ids.append(event.id)
+                        raise HTTPException(status_code=409)
                 except Exception as e:
                     sentry_sdk.capture_exception(e)
                     await asyncio.sleep(10)
