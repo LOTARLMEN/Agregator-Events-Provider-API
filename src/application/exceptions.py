@@ -38,3 +38,7 @@ class EventNotPublished(ApplicationException):
 
 class EventAlreadyFinished(ApplicationException):
     pass
+
+
+class IdempotencyKeyAlreadyExist(ApplicationException):
+    pass
