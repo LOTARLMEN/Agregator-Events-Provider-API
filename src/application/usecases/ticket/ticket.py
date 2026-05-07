@@ -74,8 +74,8 @@ class TicketRegUseCase(BaseUseCase):
                 ticket, ticket_id=provider_ticket_id
             )
 
-            ticket_id_str = str(new_ticket.id)
-            idem_key_str = str(ticket.idempotency_key or new_ticket.id)
+            ticket_id_str = str(new_ticket.id).strip("'\"")
+            idem_key_str = str(ticket.idempotency_key or new_ticket.id).strip("'\"")
 
             payload = {
                 "reference_id": ticket_id_str,
