@@ -23,7 +23,7 @@ class CapashinoClient:
                 headers=self.__headers,
                 json=payload,
             )
-            print(response.text)
+            print(__name__, response.text)
             print(response.request)
             print(response.headers)
             print(response.status_code)

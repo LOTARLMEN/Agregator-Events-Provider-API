@@ -18,13 +18,14 @@ async def run_worker():
                 repo = OutboxRepo(session)
                 events = await repo.get_events(limit=100)
                 if not events:
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(1)
                     continue
                 else:
                     processed_ids = []
 
                     for event in events:
                         try:
+                            print(__name__, event.payload)
                             await capashino_client.notifications(
                                 payload=event.payload,
                             )
@@ -46,10 +47,10 @@ async def run_worker():
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            await asyncio.sleep(2)
+            await asyncio.sleep(3)
             continue
 
         if events_processed:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
         else:
-            await asyncio.sleep(5)
+            await asyncio.sleep(0.1)
