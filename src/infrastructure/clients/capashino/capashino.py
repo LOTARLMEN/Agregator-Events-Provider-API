@@ -17,7 +17,6 @@ class CapashinoClient:
     ) -> dict:
         path = "api/notifications"
         url = urljoin(self.__base_url, path)
-
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.post(
                 url,

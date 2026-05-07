@@ -89,7 +89,6 @@ class TicketRegUseCase(BaseUseCase):
             )
 
             await self.uow.commit()
-            await self.uow.session.close()
             return TicketResponseSchem(id=new_ticket.id)
 
     async def del_ticket(self, ticket_id: uuid.UUID) -> dict[str, bool]:

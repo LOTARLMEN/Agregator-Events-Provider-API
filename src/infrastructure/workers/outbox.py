@@ -16,10 +16,10 @@ async def run_worker():
         try:
             async with db_helper.session_factory() as session:
                 repo = OutboxRepo(session)
-
                 events = await repo.get_events(limit=100)
                 if not events:
-                    await session.rollback()
+                    await asyncio.sleep(5)
+                    continue
                 else:
                     processed_ids = []
 
