@@ -20,14 +20,10 @@ class DataBaseHelper:
             expire_on_commit=False,
         )
 
-    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
-        async with self.session_factory() as session:
-            yield session
-
 
 db_helper = DataBaseHelper(url=setting.DATABASE_URL)
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async for session in db_helper.get_session():
+    async with db_helper.session_factory() as session:
         yield session

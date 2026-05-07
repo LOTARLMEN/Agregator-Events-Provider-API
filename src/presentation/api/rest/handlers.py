@@ -108,7 +108,7 @@ async def idempotency_key_exist_handler(
     request: Request, exc: ex.IdempotencyKeyAlreadyExist
 ):
     return JSONResponse(
-        status_code=status.HTTP_409_NOT_FOUND,
+        status_code=status.HTTP_409_CONFLICT,
         content={"detail": exc.message},
     )
 
