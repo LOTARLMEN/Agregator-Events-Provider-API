@@ -79,7 +79,7 @@ class TicketRegUseCase(BaseUseCase):
 
             payload = {
                 "reference_id": ticket_id_str,
-                "message": f"Ticket {new_ticket.id} has been registered.",
+                "message": f"Вы успешно зарегистрированы на мероприятие - {new_ticket.event_id}",
                 "idempotency_key": idem_key_str,
             }
 

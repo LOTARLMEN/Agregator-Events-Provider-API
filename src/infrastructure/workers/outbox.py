@@ -24,18 +24,9 @@ async def run_worker():
                     processed_ids = []
 
                     for event in events:
-                        message = event.payload.get("message", "").strip("'\"")
-                        reference_id = event.payload.get("reference_id", "").strip(
-                            "'\""
-                        )
-                        idempotency_key = event.payload.get(
-                            "idempotency_key", ""
-                        ).strip("'\"")
                         try:
                             await capashino_client.notifications(
-                                message=message,
-                                reference_id=reference_id,
-                                idempotency_key=idempotency_key,
+                                payload=event.payload,
                             )
                             processed_ids.append(event.id)
 
