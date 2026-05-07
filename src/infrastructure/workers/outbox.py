@@ -36,8 +36,10 @@ async def run_worker():
                                 processed_ids.append(event.id)
                             else:
                                 sentry_sdk.capture_exception(e)
+                                break
 
                         except Exception as e:
+                            print(f"Ошибка при обработке {event.id}: {e}")
                             sentry_sdk.capture_exception(e)
 
                     if processed_ids:
@@ -53,4 +55,4 @@ async def run_worker():
         if events_processed:
             await asyncio.sleep(0.1)
         else:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(1.5)
