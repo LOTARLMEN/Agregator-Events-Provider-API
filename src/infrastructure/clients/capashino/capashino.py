@@ -23,5 +23,11 @@ class CapashinoClient:
                 headers=self.__headers,
                 json=payload,
             )
+            print(response.text)
+            print(response.request)
+            print(response.headers)
+            print(response.status_code)
+            print(response.json())
+            # 15eb2619-9e1c-4164-bfae-7ff21052941e
             response.raise_for_status()
             return response.json()

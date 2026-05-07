@@ -33,7 +33,8 @@ class TicketRegUseCase(BaseUseCase):
                     )
 
                     if (
-                        existing_ticket.first_name == ticket.first_name
+                        existing_ticket
+                        and existing_ticket.first_name == ticket.first_name
                         and existing_ticket.last_name == ticket.last_name
                         and existing_ticket.email == ticket.email
                         and existing_ticket.seat == ticket.seat
