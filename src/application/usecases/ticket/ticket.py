@@ -77,7 +77,7 @@ class TicketRegUseCase(BaseUseCase):
             payload = {
                 "reference_id": new_ticket.id,
                 "message": f"Ticket {new_ticket.id} has been registered.",
-                "idempotency_key": ticket.idempotency_key,
+                "idempotency_key": ticket.idempotency_key or new_ticket.id,
             }
 
             await self.uow.outbox_repo.add(
