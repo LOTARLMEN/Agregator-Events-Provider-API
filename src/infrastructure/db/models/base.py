@@ -1,4 +1,5 @@
 import re
+
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 

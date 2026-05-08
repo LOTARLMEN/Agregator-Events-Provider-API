@@ -1,9 +1,11 @@
 import uuid
-from async_lru import alru_cache
-import httpx
-from httpx import ConnectTimeout, HTTPStatusError
 from urllib.parse import urljoin
-from src.application.exceptions import ProviderTimeout, ProviderError
+
+import httpx
+from async_lru import alru_cache
+from httpx import ConnectTimeout, HTTPStatusError
+
+from src.application.exceptions import ProviderError, ProviderTimeout
 from src.config.config import setting
 
 

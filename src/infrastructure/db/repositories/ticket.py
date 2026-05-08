@@ -2,11 +2,12 @@ import uuid
 import uuid as uuid_pkg
 from typing import Sequence
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 
 from src.application.dtos.ticket import TicketRequestSchem
-from .base import BaseRepo
 from src.infrastructure.db.models.ticket import Ticket
+
+from .base import BaseRepo
 
 
 class TicketRepo(BaseRepo):

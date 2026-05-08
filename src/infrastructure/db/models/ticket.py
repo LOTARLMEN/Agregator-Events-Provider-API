@@ -1,6 +1,7 @@
-from sqlalchemy import UUID, ForeignKey
-from sqlalchemy.orm import mapped_column, Mapped
 import uuid as uuid_pkg
+
+from sqlalchemy import UUID, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
 

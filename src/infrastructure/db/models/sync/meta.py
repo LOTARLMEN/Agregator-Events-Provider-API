@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime, timezone
+
 from src.infrastructure.db.models.base import Base
+
 from .status import SyncStatus
 
 

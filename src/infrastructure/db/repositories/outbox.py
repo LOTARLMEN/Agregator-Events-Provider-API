@@ -1,5 +1,6 @@
 from typing import Any
 from uuid import UUID
+
 from sqlalchemy import select, update
 
 from src.infrastructure.db.models.outbox.outbox import Outbox

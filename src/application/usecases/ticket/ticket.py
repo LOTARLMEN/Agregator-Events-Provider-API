@@ -4,14 +4,13 @@ from datetime import datetime, timezone
 from src.application.dtos.ticket import TicketRequestSchem, TicketResponseSchem
 from src.application.exceptions import (
     EventNotFound,
-    RegistrationDeadlinePasses,
-    TicketIsRegistered,
-    SeatNotAvailable,
-    TicketIsNotRegistered,
     EventNotPublished,
     IdempotencyKeyAlreadyExist,
+    RegistrationDeadlinePasses,
+    SeatNotAvailable,
+    TicketIsNotRegistered,
+    TicketIsRegistered,
 )
-
 from src.application.usecases.base import BaseUseCase
 from src.infrastructure.db.models.event.status import EventStatus
 

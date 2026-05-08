@@ -1,15 +1,14 @@
 import uuid
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Depends, Request
 
 from src.application.dtos.event import (
-    EventSeatsResponseSchem,
     EventDetailResponseSchema,
+    EventSeatsResponseSchem,
     EventsResponseSchem,
 )
 from src.application.dtos.pagination import PaginationSchema
 from src.infrastructure import di as dep
-
 
 router = APIRouter(prefix="/api/events", tags=["События"])
 

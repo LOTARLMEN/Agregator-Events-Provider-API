@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from src.application.dtos.place import PlaceResponseSchema, DetailPlaceResponseSchema
+from src.application.dtos.place import DetailPlaceResponseSchema, PlaceResponseSchema
 
 
 class BaseEventSchema(BaseModel):

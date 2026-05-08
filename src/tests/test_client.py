@@ -1,8 +1,8 @@
 import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 from src.application.exceptions import ProviderTimeout
 from src.infrastructure.clients.events.provider import EventProviderClient

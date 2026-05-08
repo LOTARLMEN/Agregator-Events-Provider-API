@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from src.infrastructure import di as dep
 
+from src.infrastructure import di as dep
 
 router = APIRouter(prefix="/api/sync", tags=["Ручная синхронизация"])
 

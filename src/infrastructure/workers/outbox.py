@@ -1,11 +1,11 @@
 import asyncio
+
 import sentry_sdk
 from httpx import HTTPStatusError
 
-from src.infrastructure.db.session import db_helper
-from src.infrastructure.db.repositories.outbox import OutboxRepo
-from src.infrastructure.db.repositories.outbox import OutboxStatus
 from src.infrastructure.clients.capashino.capashino import CapashinoClient
+from src.infrastructure.db.repositories.outbox import OutboxRepo, OutboxStatus
+from src.infrastructure.db.session import db_helper
 
 
 async def run_worker():

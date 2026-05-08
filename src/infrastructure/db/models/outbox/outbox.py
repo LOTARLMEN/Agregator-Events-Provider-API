@@ -1,12 +1,12 @@
 import uuid
+import uuid as uuid_pkg
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy import UUID, DateTime
-import uuid as uuid_pkg
+from sqlalchemy.dialects.postgresql import ENUM, JSONB
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.infrastructure.db.models.base import Base
 from src.infrastructure.db.models.outbox.status import OutboxStatus
 

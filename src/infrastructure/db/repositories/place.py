@@ -4,8 +4,9 @@ from typing import Sequence
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-from .base import BaseRepo
 from src.infrastructure.db.models.place import Place
+
+from .base import BaseRepo
 
 
 class PlaceRepo(BaseRepo):

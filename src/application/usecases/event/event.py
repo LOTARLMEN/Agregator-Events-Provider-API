@@ -1,11 +1,12 @@
 import datetime
 from uuid import UUID
 
+from event.status import EventStatus
 
-from src.application.exceptions import EventNotFound, EventAlreadyFinished
-from src.application.usecases.base import BaseUseCase
 from src.application.dtos.event import EventDetailResponseSchema
 from src.application.dtos.pagination import PaginationSchema
+from src.application.exceptions import EventAlreadyFinished, EventNotFound
+from src.application.usecases.base import BaseUseCase
 from src.infrastructure.clients.events.paginator import EventsPaginator
 from src.infrastructure.db.models.sync.status import SyncStatus
 
@@ -40,7 +41,7 @@ class GetEventsUseCase(BaseUseCase):
             if event is None:
                 raise EventNotFound("Event not found.")
 
-            if event.status == "finished":
+            if event.status == EventStatus.FINISHED:
                 raise EventAlreadyFinished("Event already finished.")
 
             await self.uow.commit()

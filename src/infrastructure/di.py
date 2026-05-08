@@ -1,12 +1,12 @@
-from fastapi import Depends
 from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.application.usecases as usc
 from src.infrastructure.clients.events.provider import EventProviderClient
 from src.infrastructure.db.session import get_async_session
 from src.infrastructure.db.uow import UnitOfWork
-import src.application.usecases as usc
 
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 

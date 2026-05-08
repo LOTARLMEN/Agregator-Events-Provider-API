@@ -1,6 +1,8 @@
 from sqlalchemy import select
-from .base import BaseRepo
+
 from src.infrastructure.db.models.sync.meta import SyncMeta
+
+from .base import BaseRepo
 
 
 class SyncMetaRepo(BaseRepo):

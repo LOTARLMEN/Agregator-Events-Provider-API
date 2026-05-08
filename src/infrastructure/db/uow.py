@@ -2,6 +2,7 @@ from traceback import TracebackException
 from types import TracebackType
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.infrastructure.db.repositories.event import EventRepo
 from src.infrastructure.db.repositories.outbox import OutboxRepo
 from src.infrastructure.db.repositories.place import PlaceRepo

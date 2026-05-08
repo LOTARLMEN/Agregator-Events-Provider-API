@@ -1,15 +1,14 @@
 import asyncio
 from contextlib import asynccontextmanager
-from src.infrastructure.db.session import get_async_session
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 
 from src.application.usecases import AddEventsUseCase
+from src.infrastructure.db.session import get_async_session
 from src.infrastructure.db.uow import UnitOfWork
 from src.infrastructure.di import event_client
-
 from src.infrastructure.workers.outbox import run_worker
 
 

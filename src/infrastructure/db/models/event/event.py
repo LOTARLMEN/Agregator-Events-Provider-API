@@ -1,12 +1,13 @@
-from datetime import datetime
-from src.infrastructure.db.models.base import Base
-from sqlalchemy import UUID, ForeignKey, DateTime, Enum
-from sqlalchemy.orm import Mapped, relationship, mapped_column
 import uuid as uuid_pkg
+from datetime import datetime
+from typing import TYPE_CHECKING
 
+from sqlalchemy import UUID, DateTime, Enum, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.infrastructure.db.models.base import Base
 from src.infrastructure.db.models.event.status import EventStatus
 from src.infrastructure.db.models.mixins import TimestampMixin
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.infrastructure.db.models.place import Place

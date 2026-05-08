@@ -1,12 +1,12 @@
 from fastapi import APIRouter
+
 from . import (
-    sync_router,
     events_router,
     health_router,
-    ticket_router,
     sentry_check_router,
+    sync_router,
+    ticket_router,
 )
-
 
 router = APIRouter()
 

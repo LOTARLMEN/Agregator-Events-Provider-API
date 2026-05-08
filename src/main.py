@@ -4,12 +4,10 @@ from fastapi import FastAPI
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
-from src.presentation.api.rest.handlers import handlers_mapping
 from src.config.config import setting
-
-from src.presentation.api.rest.router import router
 from src.presentation.api.lifespan import lifespan
-
+from src.presentation.api.rest.handlers import handlers_mapping
+from src.presentation.api.rest.router import router
 
 sentry_sdk.init(
     dsn=setting.SENTRY_DSN,

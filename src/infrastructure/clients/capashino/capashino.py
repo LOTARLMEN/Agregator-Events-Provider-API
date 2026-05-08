@@ -1,7 +1,9 @@
 from typing import Any
-import httpx
-from src.config.config import setting
 from urllib.parse import urljoin
+
+import httpx
+
+from src.config.config import setting
 
 
 class CapashinoClient:

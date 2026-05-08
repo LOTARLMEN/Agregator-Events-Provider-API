@@ -5,5 +5,5 @@ __all__ = (
 )
 
 
-from .ticket.ticket import TicketRegUseCase
 from .event.event import AddEventsUseCase, GetEventsUseCase
+from .ticket.ticket import TicketRegUseCase

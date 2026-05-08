@@ -1,12 +1,14 @@
 import uuid as uuid_pkg
 from datetime import datetime
+
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
-from sqlalchemy import select
 from sqlalchemy.sql.functions import count
 
-from .base import BaseRepo
 from src.infrastructure.db.models.event import Event
+
+from .base import BaseRepo
 
 
 class EventRepo(BaseRepo):

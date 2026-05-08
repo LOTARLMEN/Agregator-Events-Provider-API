@@ -1,7 +1,8 @@
 import uuid
 
 from fastapi import APIRouter, status
-from src.application.dtos.ticket import TicketResponseSchem, TicketRequestSchem
+
+from src.application.dtos.ticket import TicketRequestSchem, TicketResponseSchem
 from src.infrastructure.di import TicketRegUseCaseDep
 
 router = APIRouter(prefix="/api/tickets", tags=["Билеты"])

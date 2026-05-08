@@ -1,8 +1,10 @@
-from sqlalchemy.orm import Mapped, relationship, mapped_column
-from sqlalchemy import UUID
 import uuid as uuid_pkg
-from .base import Base
 from typing import TYPE_CHECKING
+
+from sqlalchemy import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .base import Base
 
 if TYPE_CHECKING:
     from .event import Event
