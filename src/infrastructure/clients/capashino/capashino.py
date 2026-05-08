@@ -21,6 +21,7 @@ class CapashinoClient:
         # print(__name__, response.request)
         print(__name__, payload)
         print(__name__, url)
+        print(f"{self.__api_key=}")
         async with httpx.AsyncClient() as client:
             response = await client.request(
                 method="POST",
