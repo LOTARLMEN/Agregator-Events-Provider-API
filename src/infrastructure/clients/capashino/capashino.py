@@ -21,12 +21,17 @@ class CapashinoClient:
             # print(__name__, response.text)
             # print(__name__, response.request)
             # print(__name__, response.json())
+            print(
+                __name__,
+            )
             async with httpx.AsyncClient(follow_redirects=True, timeout=5) as client:
                 response = await client.post(
                     url,
                     headers=self.__headers,
                     json=payload,
                 )
+                print(response.status_code)
             return response.json()
         except Exception as e:
             print(__name__, e)
+            print(response.status_code or 0)
