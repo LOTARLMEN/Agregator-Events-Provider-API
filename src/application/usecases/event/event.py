@@ -1,13 +1,12 @@
 import datetime
 from uuid import UUID
 
-from event.status import EventStatus
-
 from src.application.dtos.event import EventDetailResponseSchema
 from src.application.dtos.pagination import PaginationSchema
 from src.application.exceptions import EventAlreadyFinished, EventNotFound
 from src.application.usecases.base import BaseUseCase
 from src.infrastructure.clients.events.paginator import EventsPaginator
+from src.infrastructure.db.models.event.status import EventStatus
 from src.infrastructure.db.models.sync.status import SyncStatus
 
 
