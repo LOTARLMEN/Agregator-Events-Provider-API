@@ -1,6 +1,7 @@
 from typing import Any
 from uuid import UUID
 from sqlalchemy import select, update
+
 from src.infrastructure.db.models.outbox.outbox import Outbox
 from src.infrastructure.db.models.outbox.status import OutboxStatus
 from src.infrastructure.db.repositories.base import BaseRepo
@@ -32,7 +33,7 @@ class OutboxRepo(BaseRepo):
             .with_for_update(skip_locked=True)
         )
         events = await self.session.execute(stmt)
-        return events.scalars().all()  # noqa: F401
+        return events.scalars().all()
 
     async def update_status(
         self,
@@ -48,3 +49,12 @@ class OutboxRepo(BaseRepo):
         )
         result = await self.session.execute(stmt)
         return result.scalars().first()
+
+    async def update_retry(self, id: UUID):
+        stmt = select(Outbox).where(Outbox.id == id)
+        result = await self.session.execute(stmt)
+        outbox = result.scalar()
+        if outbox:
+            outbox.retry += 1
+        await self.session.commit()
+        await self.session.refresh(outbox)
