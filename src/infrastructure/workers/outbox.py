@@ -34,13 +34,14 @@ async def run_worker():
                                 failed_ids.append(event.id)
                                 continue
 
-                            await capashino_client.notifications(
+                            data = await capashino_client.notifications(
                                 payload=event.payload,
                             )
-                            processed_ids.append(event.id)
-                            print(
-                                f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
-                            )
+                            if data is not None:
+                                processed_ids.append(event.id)
+                                print(
+                                    f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
+                                )
 
                         except HTTPStatusError as e:
                             if e.response.status_code == 409:

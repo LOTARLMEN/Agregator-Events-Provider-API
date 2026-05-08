@@ -17,20 +17,17 @@ class CapashinoClient:
     ) -> dict:
         path = "api/notifications"
         url = urljoin(self.__base_url, path)
-        try:
-            # print(__name__, response.text)
-            # print(__name__, response.request)
-            print(__name__, payload)
-            async with httpx.AsyncClient() as client:
-                response = await client.request(
-                    method="POST",
-                    url=url,
-                    json=payload,
-                )
-                print(response.status_code)
-                trouble = response.raise_for_status()
-                print(trouble)
-                return response.json()
-        except Exception as e:
-            print(e)
-            print("Ошибка при обработке Капашино.")
+        # print(__name__, response.text)
+        # print(__name__, response.request)
+        print(__name__, payload)
+        async with httpx.AsyncClient() as client:
+            response = await client.request(
+                method="POST",
+                url=url,
+                json=payload,
+            )
+            data = response.json()
+            if not response.is_success:
+                print(f"Был получен {response.status_code} игнорируем")
+                return None
+            return data
