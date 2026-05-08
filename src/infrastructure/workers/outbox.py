@@ -18,8 +18,10 @@ async def run_worker():
                 repo = OutboxRepo(session)
                 events = await repo.get_events(limit=100)
                 if not events:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(10)
+                    print("Спим 10 секунд. Ивентов не было.")
                     continue
+
                 else:
                     processed_ids = []
                     failed_ids = []
@@ -30,13 +32,14 @@ async def run_worker():
                             failed_ids.append(event.id)
                             continue
 
-                        print(__name__, f"{event.status=}")
-                        print(__name__, event.payload)
                         await capashino_client.notifications(
                             payload=event.payload,
                         )
                         processed_ids.append(event.id)
                         await repo.update_retry(event.id)
+                        print(
+                            f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
+                        )
 
                     # # except HTTPStatusError as e:
                     #     if e.response.status_code == 409:
@@ -64,6 +67,4 @@ async def run_worker():
             continue
 
         if events_processed:
-            await asyncio.sleep(0.1)
-        else:
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(5)
