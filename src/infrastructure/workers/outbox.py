@@ -14,59 +14,58 @@ async def run_worker():
     while True:
         events_processed = False
 
-        try:
-            async with db_helper.session_factory() as session:
-                repo = OutboxRepo(session)
-                events = await repo.get_events(limit=100)
-                if not events:
-                    await asyncio.sleep(2)
-                    print("Спим 2 секунд. Ивентов не было.")
-                    continue
+        # try:
+        async with db_helper.session_factory() as session:
+            repo = OutboxRepo(session)
+            events = await repo.get_events(limit=100)
+            if not events:
+                await asyncio.sleep(2)
+                print("Спим 2 секунд. Ивентов не было.")
+                continue
 
-                else:
-                    processed_ids = []
-                    failed_ids = []
+            else:
+                processed_ids = []
+                failed_ids = []
 
-                    for event in events:
-                        try:
-                            await repo.update_retry(event.id)
-                            if event.retry > 3:
-                                failed_ids.append(event.id)
-                                continue
-
-                            data = await capashino_client.notifications(
-                                payload=event.payload,
-                            )
-                            if data is not None:
-                                processed_ids.append(event.id)
-                                print(
-                                    f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
-                                )
-
-                        except HTTPStatusError as e:
-                            if e.response.status_code == 409:
-                                print(e.response.json())
-                                processed_ids.append(event.id)
-                            else:
-                                sentry_sdk.capture_exception(e)
-                                break
-
-                        except Exception as e:
-                            print(__name__, f"Ошибка при обработке {event.id}: {e}")
-                            sentry_sdk.capture_exception(e)
+                for event in events:
+                        await repo.update_retry(event.id)
+                        if event.retry > 3:
+                            failed_ids.append(event.id)
                             continue
 
-                    if processed_ids:
-                        await repo.update_status(processed_ids)
-                        await session.commit()
-                        events_processed = True
-                    if failed_ids:
-                        await repo.update_status(failed_ids, OutboxStatus.FAILED)
+                        data = await capashino_client.notifications(
+                            payload=event.payload,
+                        )
+                        if data is not None:
+                            processed_ids.append(event.id)
+                            print(
+                                f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
+                            )
 
-        except Exception as e:
-            sentry_sdk.capture_exception(e)
-            await asyncio.sleep(3)
-            continue
+                    # except HTTPStatusError as e:
+                    #     if e.response.status_code == 409:
+                    #         print(e.response.json())
+                    #         processed_ids.append(event.id)
+                    #     else:
+                    #         sentry_sdk.capture_exception(e)
+                    #         break
+
+                    # except Exception as e:
+                    #     print(__name__, f"Ошибка при обработке {event.id}: {e}")
+                    #     sentry_sdk.capture_exception(e)
+                    #     continue
+
+                if processed_ids:
+                    await repo.update_status(processed_ids)
+                    await session.commit()
+                    events_processed = True
+                if failed_ids:
+                    await repo.update_status(failed_ids, OutboxStatus.FAILED)
+
+        # except Exception as e:
+        #     sentry_sdk.capture_exception(e)
+        #     await asyncio.sleep(3)
+        #     continue
 
         if events_processed:
             await asyncio.sleep(5)
