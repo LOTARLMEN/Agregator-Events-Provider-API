@@ -31,7 +31,6 @@ class TicketRegUseCase(BaseUseCase):
                     existing_ticket = await self.uow.ticket_repo.get_by_uuid(
                         existing_event.payload["reference_id"]
                     )
-                    print(f"{existing_event.payload["reference_id"]=}")
                     if (
                         existing_ticket
                         and existing_ticket.first_name == ticket.first_name
@@ -83,7 +82,6 @@ class TicketRegUseCase(BaseUseCase):
                 "message": f"Вы успешно зарегистрированы на мероприятие - {new_ticket.event_id}",
                 "idempotency_key": idem_key_str,
             }
-            print(__name__, payload)
             await self.uow.outbox_repo.add(
                 event_type="ticket_registration",
                 payload=payload,

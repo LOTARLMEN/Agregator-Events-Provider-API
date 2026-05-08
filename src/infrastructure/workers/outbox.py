@@ -20,7 +20,6 @@ async def run_worker():
                 events = await repo.get_events(limit=100)
                 if not events:
                     await asyncio.sleep(2)
-                    print("Спим 2 секунд. Ивентов не было.")
                     continue
 
                 else:
@@ -39,20 +38,15 @@ async def run_worker():
                             )
                             if not data:
                                 processed_ids.append(event.id)
-                                print(
-                                    f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
-                                )
 
                         except HTTPStatusError as e:
                             if e.response.status_code == 409:
-                                print(e.response.json())
                                 processed_ids.append(event.id)
                             else:
                                 sentry_sdk.capture_exception(e)
                                 break
 
                         except Exception as e:
-                            print(__name__, f"Ошибка при обработке {event.id}: {e}")
                             sentry_sdk.capture_exception(e)
                             continue
 
