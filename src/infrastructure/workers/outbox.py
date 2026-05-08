@@ -51,7 +51,7 @@ async def run_worker():
                                 break
 
                         except Exception as e:
-                            print(f"Ошибка при обработке {event.id}: {e}")
+                            print(__name__, f"Ошибка при обработке {event.id}: {e}")
                             sentry_sdk.capture_exception(e)
                             continue
 
