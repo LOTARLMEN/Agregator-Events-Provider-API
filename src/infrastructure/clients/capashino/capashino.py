@@ -28,8 +28,9 @@ class CapashinoClient:
                     json=payload,
                 )
                 print(response.status_code)
-            return response.json()
+                trouble = response.raise_for_status()
+                print(trouble)
+                return response.json()
         except Exception as e:
             print(e)
             print("Ошибка при обработке Капашино.")
-            print(response.status_code or 0)

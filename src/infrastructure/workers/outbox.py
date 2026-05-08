@@ -29,6 +29,7 @@ async def run_worker():
 
                     for event in events:
                         try:
+                            await repo.update_retry(event.id)
                             if event.retry > 3:
                                 failed_ids.append(event.id)
                                 continue
@@ -37,7 +38,6 @@ async def run_worker():
                                 payload=event.payload,
                             )
                             processed_ids.append(event.id)
-                            await repo.update_retry(event.id)
                             print(
                                 f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
                             )
