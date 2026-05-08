@@ -1,6 +1,4 @@
 import asyncio
-import sentry_sdk
-from httpx import HTTPStatusError
 
 from src.infrastructure.db.session import db_helper
 from src.infrastructure.db.repositories.outbox import OutboxRepo
@@ -28,32 +26,32 @@ async def run_worker():
                 failed_ids = []
 
                 for event in events:
-                        await repo.update_retry(event.id)
-                        if event.retry > 3:
-                            failed_ids.append(event.id)
-                            continue
+                    await repo.update_retry(event.id)
+                    if event.retry > 3:
+                        failed_ids.append(event.id)
+                        continue
 
-                        data = await capashino_client.notifications(
-                            payload=event.payload,
+                    data = await capashino_client.notifications(
+                        payload=event.payload,
+                    )
+                    if data is not None:
+                        processed_ids.append(event.id)
+                        print(
+                            f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
                         )
-                        if data is not None:
-                            processed_ids.append(event.id)
-                            print(
-                                f"Обработал событие: {event.id} \nПопытка номер: {event.retry}"
-                            )
 
-                    # except HTTPStatusError as e:
-                    #     if e.response.status_code == 409:
-                    #         print(e.response.json())
-                    #         processed_ids.append(event.id)
-                    #     else:
-                    #         sentry_sdk.capture_exception(e)
-                    #         break
+                # except HTTPStatusError as e:
+                #     if e.response.status_code == 409:
+                #         print(e.response.json())
+                #         processed_ids.append(event.id)
+                #     else:
+                #         sentry_sdk.capture_exception(e)
+                #         break
 
-                    # except Exception as e:
-                    #     print(__name__, f"Ошибка при обработке {event.id}: {e}")
-                    #     sentry_sdk.capture_exception(e)
-                    #     continue
+                # except Exception as e:
+                #     print(__name__, f"Ошибка при обработке {event.id}: {e}")
+                #     sentry_sdk.capture_exception(e)
+                #     continue
 
                 if processed_ids:
                     await repo.update_status(processed_ids)
