@@ -17,14 +17,16 @@ class CapashinoClient:
     ) -> dict:
         path = "api/notifications"
         url = urljoin(self.__base_url, path)
-        async with httpx.AsyncClient(follow_redirects=True, timeout=5) as client:
-            response = await client.post(
-                url,
-                headers=self.__headers,
-                json=payload,
-            )
-            print(__name__, response.text)
-            print(__name__, response.request)
-            print(__name__, response.json())
-            response.raise_for_status()
+        try:
+            # print(__name__, response.text)
+            # print(__name__, response.request)
+            # print(__name__, response.json())
+            async with httpx.AsyncClient(follow_redirects=True, timeout=5) as client:
+                response = await client.post(
+                    url,
+                    headers=self.__headers,
+                    json=payload,
+                )
             return response.json()
+        except Exception as e:
+            print(__name__, e)
