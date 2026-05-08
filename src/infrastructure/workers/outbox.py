@@ -19,8 +19,8 @@ async def run_worker():
                 repo = OutboxRepo(session)
                 events = await repo.get_events(limit=100)
                 if not events:
-                    await asyncio.sleep(10)
-                    print("Спим 10 секунд. Ивентов не было.")
+                    await asyncio.sleep(2)
+                    print("Спим 2 секунд. Ивентов не было.")
                     continue
 
                 else:
