@@ -31,7 +31,7 @@ class TicketRegUseCase(BaseUseCase):
                     existing_ticket = await self.uow.ticket_repo.get_by_uuid(
                         existing_event.payload["reference_id"]
                     )
-                    print(existing_event.payload["reference_id"])
+                    print(f"{existing_event.payload["reference_id"]=}")
                     if (
                         existing_ticket
                         and existing_ticket.first_name == ticket.first_name
