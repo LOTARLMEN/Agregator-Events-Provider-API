@@ -3,6 +3,7 @@ import uuid as uuid_pkg
 from typing import Sequence
 
 from sqlalchemy import delete, select
+from sqlalchemy.sql.functions import count
 
 from src.application.dtos.ticket import TicketRequestSchem
 from src.infrastructure.db.models.ticket import Ticket
@@ -52,3 +53,8 @@ class TicketRepo(BaseRepo):
 
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none() is not None
+
+    async def get_count(self) -> int:
+        stmt = select(count(Ticket.id))
+        result = await self.session.execute(stmt)
+        return result.scalar() or 0
