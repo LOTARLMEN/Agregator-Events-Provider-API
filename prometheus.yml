@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "aggregator_app"
+    static_configs:
+      - targets: ["aggregator_app:8000"]
